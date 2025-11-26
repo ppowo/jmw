@@ -17,9 +17,9 @@ var buildCmd = &cobra.Command{
 Auto-detects the project (sinfomar/mto) from the current directory.
 
 For sinfomar:
-  gmw build        # Uses LOCAL profile (default)
-  gmw build TEST   # Uses TEST profile (disables LOCAL)
-  gmw build PROD   # Uses PROD profile (disables LOCAL)
+  gmw build        # Uses TEST profile (default)
+  gmw build TEST   # Uses TEST profile
+  gmw build PROD   # Uses PROD profile
 
 For mto:
   gmw build        # Plain build, no profiles

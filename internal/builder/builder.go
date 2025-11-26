@@ -84,11 +84,7 @@ func (b *Builder) showBuildInfo(profile string) {
 	}
 
 	if profile != "" {
-		fmt.Printf("→ Profile: %s", profile)
-		if b.projectInfo.Name == "sinfomar" && profile != "LOCAL" {
-			fmt.Printf(" (disables LOCAL)")
-		}
-		fmt.Println()
+		fmt.Printf("→ Profile: %s\n", profile)
 	} else if b.projectInfo.Config.DefaultProfile != "" {
 		fmt.Printf("→ Profile: %s (default)\n", b.projectInfo.Config.DefaultProfile)
 	}

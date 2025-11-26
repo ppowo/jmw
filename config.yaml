@@ -7,11 +7,11 @@ projects:
     base_path: ~/Work/SinfomarSuite
 
     # Build settings
-    default_profile: LOCAL
-    available_profiles: [LOCAL, TEST, PROD]
+    default_profile: TEST
+    available_profiles: [TEST, PROD]
     profile_overrides:
-      TEST: [TEST, '!LOCAL', '!PROD']
-      PROD: [PROD, '!LOCAL', '!PROD']
+      TEST: [TEST, '!PROD']
+      PROD: [PROD, '!TEST']
     skip_tests: true
 
     # Local WildFly
@@ -46,7 +46,7 @@ projects:
     # Build settings (no profiles)
     # Disable Sinfomar profiles to prevent interference
     profile_overrides:
-      "": ['!LOCAL', '!TEST', '!PROD']
+      "": ['!TEST', '!PROD']
     skip_tests: true
 
     # Local WildFly
