@@ -16,7 +16,7 @@ type ProjectInfo struct {
 	Config         *config.ProjectConfig
 	ModuleName     string // Module name (e.g., "EJBPcs", "EJBMto")
 	ModulePath     string // Absolute path to module directory
-	RepoRoot       string // Repository root (for multi-module projects)
+	RepoRoot       string // Repository root (derived from base_path or module_path)
 	Packaging      string // "jar" or "war"
 	DeploymentPath string // Module deployment path (for global modules)
 	IsGlobalModule bool   // Whether this is a global module
@@ -27,6 +27,16 @@ type PomXML struct {
 	XMLName    xml.Name `xml:"project"`
 	ArtifactId string   `xml:"artifactId"`
 	Packaging  string   `xml:"packaging"`
+}
+
+// hasParentPom checks if a directory has a pom.xml in it
+func hasParentPom(path string) bool {
+	if path == "" {
+		return false
+	}
+	pomPath := filepath.Join(path, "pom.xml")
+	_, err := os.Stat(pomPath)
+	return err == nil
 }
 
 // GetWorkingDirectory returns the current working directory
@@ -87,11 +97,14 @@ func (p *ProjectInfo) detectModule(cwd string) error {
 		p.Packaging = "jar" // Default to jar if not specified
 	}
 
-	// For multi-module projects (mto), find the repo root
-	if p.Config.RepoRoot != "" {
-		p.RepoRoot = p.Config.RepoRoot
+	// For multi-module projects, determine the repo root.
+	// If base_path contains a parent POM, use it as the repo root (multi-module build).
+	// Otherwise, use module path as repo root (single-module build).
+	if hasParentPom(p.Config.BasePath) {
+		// Base path is a multi-module Maven root - build from there
+		p.RepoRoot = p.Config.BasePath
 	} else {
-		// For single-repo projects (sinfomar), module path is the repo root
+		// Single module project - build from module directory
 		p.RepoRoot = p.ModulePath
 	}
 
@@ -158,7 +171,7 @@ func (p *ProjectInfo) GetBuildCommand(profile string) []string {
 	args := []string{"mvn", "clean"}
 
 	// For mto multi-module projects, build from repo root with -pl flag
-	if p.Config.RepoRoot != "" && p.Config.RepoRoot != p.ModulePath {
+	if p.RepoRoot != p.ModulePath {
 		// Multi-module build
 		relPath, err := filepath.Rel(p.RepoRoot, p.ModulePath)
 		if err != nil {

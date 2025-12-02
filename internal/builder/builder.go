@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/ppowo/gmw/internal/config"
@@ -57,7 +58,7 @@ func (b *Builder) Build(profile string) error {
 	}
 
 	// For multi-module JARs, also run install
-	if b.projectInfo.Config.RepoRoot != "" && b.projectInfo.Packaging == "jar" {
+	if b.projectInfo.RepoRoot != b.projectInfo.ModulePath && b.projectInfo.Packaging == "jar" {
 		installCmd := b.getInstallCommand()
 		fmt.Println("\n📦 Installing JAR to local repository...")
 		if err := b.executeBuild(installCmd); err != nil {
@@ -79,8 +80,8 @@ func (b *Builder) showBuildInfo(profile string) {
 	fmt.Printf("→ Detected: %s / %s\n", b.projectInfo.Name, b.projectInfo.ModuleName)
 	fmt.Printf("→ Packaging: %s\n", b.projectInfo.Packaging)
 
-	if b.projectInfo.Config.RepoRoot != "" {
-		fmt.Printf("→ Multi-module build from root\n")
+	if b.projectInfo.RepoRoot != b.projectInfo.ModulePath {
+		fmt.Printf("→ Multi-module build from root: %s\n", b.projectInfo.RepoRoot)
 	}
 
 	if profile != "" {
@@ -95,8 +96,8 @@ func (b *Builder) getBuildCommand(profile string) []string {
 	cmd := []string{"mvn", "clean"}
 
 	// For multi-module projects (mto), build from repo root
-	if b.projectInfo.Config.RepoRoot != "" && b.projectInfo.Config.RepoRoot != b.projectInfo.ModulePath {
-		relPath, _ := filepath.Rel(b.projectInfo.Config.RepoRoot, b.projectInfo.ModulePath)
+	if b.projectInfo.RepoRoot != b.projectInfo.ModulePath {
+		relPath, _ := filepath.Rel(b.projectInfo.RepoRoot, b.projectInfo.ModulePath)
 		cmd = append(cmd, "package", "-pl", relPath, "-am")
 	} else {
 		// Single module build
@@ -121,17 +122,14 @@ func (b *Builder) getBuildCommand(profile string) []string {
 
 // getInstallCommand constructs the install command for multi-module projects
 func (b *Builder) getInstallCommand() []string {
-	relPath, _ := filepath.Rel(b.projectInfo.Config.RepoRoot, b.projectInfo.ModulePath)
+	relPath, _ := filepath.Rel(b.projectInfo.RepoRoot, b.projectInfo.ModulePath)
 	return []string{"mvn", "install", "-pl", relPath, "-DskipTests"}
 }
 
 // executeBuild runs the Maven command
 func (b *Builder) executeBuild(cmdArgs []string) error {
 	// Determine working directory
-	workDir := b.projectInfo.ModulePath
-	if b.projectInfo.Config.RepoRoot != "" {
-		workDir = b.projectInfo.Config.RepoRoot
-	}
+	workDir := b.projectInfo.RepoRoot
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	cmd.Dir = workDir
@@ -234,17 +232,13 @@ func (b *Builder) showRemoteDeploymentGuide() {
 
 // isValidProfile checks if a profile is valid for the current project
 func (b *Builder) isValidProfile(profile string) bool {
+	// If no profiles configured, reject any non-empty profile argument
 	if len(b.projectInfo.Config.AvailableProfiles) == 0 {
-		// No profile restrictions
-		return true
+		return profile == ""
 	}
 
-	for _, validProfile := range b.projectInfo.Config.AvailableProfiles {
-		if validProfile == profile {
-			return true
-		}
-	}
-	return false
+	// Otherwise, check if the profile is in the available list
+	return slices.Contains(b.projectInfo.Config.AvailableProfiles, profile)
 }
 
 // confirm asks the user for confirmation

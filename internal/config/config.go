@@ -19,8 +19,7 @@ type Config struct {
 // ProjectConfig represents configuration for a single project
 type ProjectConfig struct {
 	// Path detection
-	BasePath string `yaml:"base_path"` // Base path for detection
-	RepoRoot string `yaml:"repo_root"` // Git repo root (for multi-module projects like mto)
+	BasePath string `yaml:"base_path"` // Base path for detection and multi-module root when it contains a parent POM
 
 	// Build settings
 	DefaultProfile    string              `yaml:"default_profile"`    // Default Maven profile (sinfomar only)
@@ -170,6 +169,15 @@ func (p *ProjectConfig) IsIgnored(moduleName string) bool {
 // GetProfileArgs returns Maven profile arguments for a given profile
 func (p *ProjectConfig) GetProfileArgs(profile string) []string {
 	if profile == "" {
+		// Check for overrides for empty profile first
+		if overrides, ok := p.ProfileOverrides[""]; ok {
+			var args []string
+			for _, prof := range overrides {
+				args = append(args, "-P"+prof)
+			}
+			return args
+		}
+		// Fall back to default profile
 		if p.DefaultProfile != "" {
 			return []string{"-P" + p.DefaultProfile}
 		}
@@ -197,10 +205,6 @@ func (c *Config) expandTildes() error {
 		proj.BasePath, err = homedir.Expand(proj.BasePath)
 		if err != nil {
 			return fmt.Errorf("failed to expand base_path: %w", err)
-		}
-		proj.RepoRoot, err = homedir.Expand(proj.RepoRoot)
-		if err != nil {
-			return fmt.Errorf("failed to expand repo_root: %w", err)
 		}
 		proj.WildFlyRoot, err = homedir.Expand(proj.WildFlyRoot)
 		if err != nil {

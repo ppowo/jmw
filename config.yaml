@@ -1,9 +1,5 @@
-# GMW Configuration
-
 projects:
-  # Sinfomar - Multiple repos in one directory, domain mode WildFly
-  sinfomar:
-    # Path detection
+  sinfomar: # multiple repos in one directory, domain mode WildFly
     base_path: ~/Work/SinfomarSuite
 
     # Build settings
@@ -14,7 +10,6 @@ projects:
       PROD: [PROD, '!TEST']
     skip_tests: true
 
-    # Local WildFly
     wildfly_root: ~/ApplicationServer/wildfly-sinfomar
     wildfly_mode: domain
     server_group: other-server-group
@@ -24,7 +19,7 @@ projects:
       host: TEST-SINFOMAR-TRIESTE-111
       user: root
       wildfly_path: /opt/wildfly
-      restart_cmd: systemctl restart wildfly
+      restart_cmd: service wildfly stop && service wildfly start
 
     # Module mappings (path for global modules, "" for normal deployment)
     modules:
@@ -35,30 +30,27 @@ projects:
 
       # Normal deployments
       # Add your normal modules here with empty string
+      storiamezzo : ""
       # PcsWeb: ""  # ignored
 
-  # MTO - Single repo with multi-module Maven, standalone mode WildFly
-  mto:
-    # Path detection
+  mto: # single repo with multi-module Maven, standalone mode Wildfly
     base_path: ~/Work/mto-suite
-    repo_root: ~/Work/mto-suite
 
-    # Build settings (no profiles)
-    # Disable Sinfomar profiles to prevent interference
+    available_profiles: []
     profile_overrides:
       "": ['!TEST', '!PROD']
+
     skip_tests: true
 
-    # Local WildFly
     wildfly_root: ~/ApplicationServer/wildfly-mto-3_0
     wildfly_mode: standalone
 
-    # Remote deployment
+    # Remote deployment (instructions only)
     remote:
       host: TEST-MTO-METROCARGO-101
       user: root
       wildfly_path: /wildfly
-      restart_cmd: systemctl restart wildfly
+      restart_cmd: service wildfly stop && service wildfly start
 
     # Module mappings (path for global modules, "" for normal deployment)
     modules:
@@ -69,7 +61,6 @@ projects:
       SinfoMto: ""
       EJBMto: ""
 
-# Restart detection rules
 restart_rules:
   global_module: true
   patterns:
