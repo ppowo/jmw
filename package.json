@@ -1,0 +1,49 @@
+{
+  "name": "jmw",
+  "version": "2.0.0",
+  "description": "Java Maven WildFly - Interactive deployment helper for Java/Maven projects targeting WildFly",
+  "main": "src/cli.js",
+  "bin": {
+    "jmw": "dist/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "dev": "node src/cli.js",
+    "build": "node build.js",
+    "clean": "rm -rf dist",
+    "install": "npm run build && mkdir -p ~/.local/bin && cp dist/cli.js ~/.local/bin/jmw && chmod +x ~/.local/bin/jmw",
+    "test": "echo 'No tests specified'",
+    "lint": "echo 'No linter configured'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ppowo/jmw.git"
+  },
+  "keywords": [
+    "maven",
+    "wildfly",
+    "java",
+    "deployment",
+    "cli"
+  ],
+  "author": "ppowo",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ppowo/jmw/issues"
+  },
+  "homepage": "https://github.com/ppowo/jmw#readme",
+  "dependencies": {
+    "boxen": "8.0.1",
+    "chalk": "4.1.2",
+    "commander": "14.0.2",
+    "execa": "9.6.1",
+    "fast-xml-parser": "5.3.2",
+    "inquirer": "13.0.2",
+    "js-yaml": "4.1.1",
+    "ora": "9.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.23.1"
+  }
+}

@@ -31,6 +31,7 @@ projects:
       # Normal deployments
       # Add your normal modules here with empty string
       storiamezzo : ""
+      trm: ""
       # PcsWeb: ""  # ignored
 
   mto: # single repo with multi-module Maven, standalone mode Wildfly
@@ -45,12 +46,24 @@ projects:
     wildfly_root: ~/ApplicationServer/wildfly-mto-3_0
     wildfly_mode: standalone
 
-    # Remote deployment (instructions only)
-    remote:
-      host: TEST-MTO-METROCARGO-101
-      user: root
-      wildfly_path: /wildfly
-      restart_cmd: service wildfly stop && service wildfly start
+    # Client-specific configurations for remote deployment
+    # Use --client parameter to select which remote to deploy to
+    clients:
+      metro:
+        remote:
+          host: TEST-MTO-METROCARGO-101
+          user: root
+          wildfly_path: /wildfly
+          restart_cmd: service wildfly stop && service wildfly start
+      psa:
+        remote:
+          host: TEST-MTO-PSA-102
+          user: root
+          wildfly_path: /wildfly
+          restart_cmd: systemctl restart wildfly-standard
+
+    # Default client (can be overridden with --client flag)
+    default_client: psa
 
     # Module mappings (path for global modules, "" for normal deployment)
     modules:
